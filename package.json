@@ -4,7 +4,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch app.js"
+    "dev": "node --watch app.js",
+    "start": "node app.js"
   },
   "keywords": [
     "api",
@@ -15,7 +16,7 @@
   "license": "MIT",
   "description": "api demo with express js",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "express": "^5.1.0"
-  },
-  "devDependencies": {}
+  }
 }
