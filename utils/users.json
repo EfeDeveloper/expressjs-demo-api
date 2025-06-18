@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Jose Villa",
+    "email": "Jose.devs@gmail.com"
+  },
+  {
+    "id": 2,
+    "name": "Jose delgado",
+    "email": "Jos.delgado@hotmail.com"
+  },
+  {
+    "id": 3,
+    "name": "Carlos López",
+    "email": "carlos.lopez@example.com"
+  },
+  {
+    "id": 4,
+    "name": "Jose H",
+    "email": "Jose.developerss@hotmail.com"
+  },
+  {
+    "id": 5,
+    "name": "Luis Fernández",
+    "email": "luis.fernandez@example.com"
+  },
+  {
+    "name": "edwin villa",
+    "email": "edwin.villa@hotmail.com",
+    "id": 6
+  },
+  {
+    "name": "Edwin Villa",
+    "email": "edwin.dev@hotmail.com",
+    "id": 7
+  }
+]
