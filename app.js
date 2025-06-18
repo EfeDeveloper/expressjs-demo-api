@@ -1,5 +1,8 @@
 require('dotenv').config();
 const express = require('express');
+
+const LoggerMiddleWare = require('./utils/middlewares/logger.js');
+const ErrorHandler = require('./utils/middlewares/errorHandler');
 const {
   validateUser,
   emailAlreadyExists,
@@ -14,7 +17,8 @@ const usersFilePath = path.join(__dirname, './utils/users.json');
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(LoggerMiddleWare);
+app.use(ErrorHandler);
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
@@ -202,6 +206,10 @@ app.delete('/users/:id', (req, res) => {
       });
     });
   });
+});
+
+app.get('/error', (req, res, next) => {
+  next(new Error('Unknown error'));
 });
 
 app.listen(PORT, () => {
