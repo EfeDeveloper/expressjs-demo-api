@@ -1,24 +1,32 @@
 require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
+const fileSystem = require('fs');
+const path = require('path');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const LoggerMiddleWare = require('./utils/middlewares/logger.js');
-const ErrorHandler = require('./utils/middlewares/errorHandler');
+const LoggerMiddleWare = require('./src/middlewares/logger.middleware.js');
+const ErrorHandler = require('./src/middlewares/errorHandler.middleware.js');
+const authenticateToken = require('./src/middlewares/auth.middleware.js');
+
 const {
   validateUser,
   emailAlreadyExists,
   userIdExists,
-} = require('./utils/usersValidations');
-const bodyParser = require('body-parser');
+} = require('./src/utils/usersValidations.js');
 
-const fileSystem = require('fs');
-const path = require('path');
 const usersFilePath = path.join(__dirname, './utils/users.json');
 
 const app = express();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(LoggerMiddleWare);
 app.use(ErrorHandler);
+
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
@@ -210,6 +218,61 @@ app.delete('/users/:id', (req, res) => {
 
 app.get('/error', (req, res, next) => {
   next(new Error('Unknown error'));
+});
+
+// Refactor or eliminate tests from this point up
+
+app.get('/db-users', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+app.get('/protected-route', authenticateToken, (req, res) => {
+  res.send({ message: 'This route is protected', user: req.user });
+});
+
+app.post('/register', async (req, res) => {
+  try {
+    const { email, name, password, role } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+        role: role ?? 'USER',
+      },
+    });
+    res.status(201).json(newUser);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+app.post('/login', async (req, res) => {
+  try {
+    const invalidAuthMessage = 'Invalid email or password';
+    const { email, password } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(400).json({ error: invalidAuthMessage });
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) return res.status(400).json({ error: invalidAuthMessage });
+
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: Math.floor(Date.now() / 1000) + 60 * 60,
+      algorithm: 'HS256',
+    });
+
+    res.status(200).json({ token });
+  } catch (error) {
+    res.status(500).json(error);
+  }
 });
 
 app.listen(PORT, () => {
