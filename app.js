@@ -10,7 +10,6 @@ const jwt = require('jsonwebtoken');
 
 const LoggerMiddleWare = require('./src/middlewares/logger.middleware.js');
 const ErrorHandler = require('./src/middlewares/errorHandler.middleware.js');
-const authenticateToken = require('./src/middlewares/auth.middleware.js');
 
 const {
   validateUser,
@@ -229,10 +228,6 @@ app.get('/db-users', async (req, res) => {
   } catch (error) {
     res.status(500).json(error);
   }
-});
-
-app.get('/protected-route', authenticateToken, (req, res) => {
-  res.send({ message: 'This route is protected', user: req.user });
 });
 
 app.post('/register', async (req, res) => {
